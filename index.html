@@ -9,7 +9,7 @@
 
   body {
     margin: 0;
-    background-color: #114087;
+    background-color: #114087; /* Azul de fondo */
     color: white;
     font-family: 'Montserrat Classic', sans-serif;
     display: flex;
@@ -23,44 +23,45 @@
     font-family: 'League Spartan', sans-serif;
     font-weight: 700;
     font-size: 3rem;
-    color: #FFBD59;
-    margin-bottom: 1rem;
+    color: #FFBD59; /* Amarillo */
+    margin-bottom: 1.5rem;
   }
 
   .container {
-    background-color: #0d316b;
+    background-color: #0d316b; /* Azul oscuro para el contenedor */
     padding: 2rem;
     border-radius: 8px;
     box-shadow: 0 0 15px #FFBD59;
-    max-width: 400px;
+    max-width: 420px;
     width: 100%;
   }
 
   label {
     display: block;
-    margin-top: 1rem;
     font-size: 1.1rem;
     color: #FFBD59;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
   }
 
-  input[type="number"] {
+  input[type="number"], select {
     width: 100%;
-    padding: 0.6rem;
+    padding: 0.5rem;
     font-size: 1.1rem;
     border-radius: 5px;
     border: none;
-    margin-top: 0.3rem;
     font-family: 'Montserrat Classic', sans-serif;
     box-sizing: border-box;
+    margin-bottom: 1rem;
   }
 
   button {
-    margin-top: 1.5rem;
+    margin-top: 0.7rem;
     width: 100%;
     background-color: #FFBD59;
     color: #114087;
     font-weight: 700;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     border: none;
     padding: 0.75rem;
     border-radius: 8px;
@@ -74,40 +75,59 @@
 
   .result {
     margin-top: 1.5rem;
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     font-weight: 600;
     color: #FFBD59;
-    min-height: 2rem;
+    min-height: 3rem;
+    white-space: pre-line;
+  }
+
+  .info {
+    font-size: 0.9rem;
+    color: #ddd;
+    margin-bottom: 1.2rem;
   }
 </style>
 </head>
 <body>
   <h1>Calculadora de Nota Final</h1>
   <div class="container">
+    <div class="info">
+      Ingresa tus dos notas parciales (0 a 20). La nota previa se calcula como promedio y se redondea hacia arriba si termina en .5 o más.<br/>
+      Luego selecciona la nota del examen final para conocer la nota definitiva y si pasas la materia.<br/>
+      Nota definitiva ≥ 10 para aprobar. Si la nota previa es 16 o más, ya tienes la materia aprobada sin examen.
+    </div>
     <label for="parcial1">Nota Parcial 1 (0 - 20):</label>
     <input type="number" id="parcial1" min="0" max="20" step="0.01" />
 
     <label for="parcial2">Nota Parcial 2 (0 - 20):</label>
     <input type="number" id="parcial2" min="0" max="20" step="0.01" />
 
-    <button id="calcularBtn">Calcular Nota Necesaria en Final</button>
+    <label for="final">Nota Examen Final:</label>
+    <select id="final">
+      <!-- Opciones de 10 a 20 -->
+      <option value="10">10</option>
+      <option value="11">11</option>
+      <option value="12">12</option>
+      <option value="13">13</option>
+      <option value="14">14</option>
+      <option value="15">15</option>
+      <option value="16">16</option>
+      <option value="17">17</option>
+      <option value="18">18</option>
+      <option value="19">19</option>
+      <option value="20">20</option>
+    </select>
+
+    <button id="calcularBtn">Calcular Nota Definitiva</button>
 
     <div class="result" id="resultado"></div>
   </div>
 
   <script>
-    // Tabla de notas según imagen: notaPrevia en filas y notaExamen en columnas, devuelve notaDefinitiva
-    // La tabla base (sin promediar) para notaPrevia va de 10 a 20, notaExamen igual, notaDefinitiva también
-
-    // Usamos la tabla para buscar nota definitiva dada nota previa y nota final
-    // Pero queremos al revés: Dada nota previa, decime la nota mínima en final para que definitiva >= 11
-
-    // Los valores en la tabla en la imagen están entre 5 y 20:
-    // Indices fila = nota previa -10 (por ejemplo, para nota previa=10: índice 0)
-    // Indices col = nota examen -10
-
-    // NOTA: Como la nota previa puede no ser entera (promedio), hacemos floor para fila y col.
-
+    // Tabla de notas definitiva según nota previa y nota examen final
+    // filas = nota previa redondeada de 10 a 20 (index 0 será 10)
+    // columnas = nota examen final de 10 a 20 (index 0 será 10)
     const tabla = [
       [5,5,5,7,8,8,10,11,11,15,15],
       [5,6,6,8,8,9,10,11,12,15,16],
@@ -119,70 +139,80 @@
       [9,9,10,11,11,12,13,13,14,16,17],
       [9,10,10,11,12,12,13,14,14,17,17],
       [10,10,11,12,12,13,14,14,15,17,18],
-      [11,11,11,12,13,13,14,15,15,17,18],
-      [11,12,12,13,13,14,14,15,16,17,18],
-      [12,12,13,13,14,14,15,15,16,18,19],
-      [12,13,13,14,14,15,15,16,16,18,19],
-      [13,13,14,14,15,15,16,16,17,18,19],
-      [14,14,14,15,15,16,16,17,17,18,19],
-      [14,15,15,15,16,16,16,17,18,19,20],
-      [15,15,16,16,16,17,17,17,18,19,20],
-      [15,16,16,16,17,17,17,18,18,19,20],
-      [16,16,17,17,17,18,18,18,19,19,20]
+      [11,11,11,12,13,13,14,15,15,17,18]
     ];
 
-    function notaAIndice(nota) {
-      let i = Math.floor(nota) - 10;
+    function notaAIndice(n) {
+      // Convierte nota a índice columna (0..10) correspondiendo 10 a 0 y 20 a 10
+      let i = n - 10;
       if(i < 0) i = 0;
       if(i > 10) i = 10;
       return i;
     }
 
-    function notaPreviaAIndice(nota) {
-      let i = Math.floor(nota) - 10;
-      if(i < 0) i = 0;
-      if(i > 19) i = 19;
-      return i;
+    function notaPreviaAIndice(n) {
+      // redondeamos hacia arriba con regla explicada:
+      // si decimal >= 0.5 subir al siguiente entero
+      const entero = Math.floor(n);
+      const decimal = n - entero;
+      let notaRedondeada = entero;
+      if(decimal >= 0.5) notaRedondeada = entero + 1;
+
+      // limitar entre 10 y 20
+      if(notaRedondeada < 10) notaRedondeada = 10;
+      if(notaRedondeada > 20) notaRedondeada = 20;
+
+      // índice fila: 10=0 ... 20=10
+      return notaRedondeada - 10;
     }
 
     document.getElementById('calcularBtn').addEventListener('click', () => {
       const p1 = parseFloat(document.getElementById('parcial1').value);
       const p2 = parseFloat(document.getElementById('parcial2').value);
+      const final = parseInt(document.getElementById('final').value);
       const resultado = document.getElementById('resultado');
 
-      if(isNaN(p1) || isNaN(p2) || p1 < 0 || p1 > 20 || p2 < 0 || p2 > 20) {
-        resultado.textContent = 'Por favor ingresa notas válidas entre 0 y 20.';
+      // validar entradas
+      if(isNaN(p1) || p1 < 0 || p1 > 20 ||
+         isNaN(p2) || p2 < 0 || p2 > 20) {
+        resultado.textContent = 'Por favor ingresa notas válidas entre 0 y 20 para los parciales.';
+        return;
+      }
+      if(isNaN(final) || final < 10 || final > 20) {
+        resultado.textContent = 'Por favor selecciona una nota válida para el examen final.';
         return;
       }
 
-      // Calcular nota previa (promedio parciales)
-      const notaPrevia = (p1 + p2) / 2;
+      // calcular nota previa redondeada
+      const notaPrevRaw = (p1 + p2) / 2;
+      const entero = Math.floor(notaPrevRaw);
+      const decimal = notaPrevRaw - entero;
+      const notaPrevia = (decimal >= 0.5) ? entero +1 : entero;
 
-      // Buscamos la nota minima en final para que definitiva >= 11 (pasa la materia)
-      // Nota Final entre 10 y 20 (valores discretos de la tabla)
-      // Vamos a probar del 10 al 20 para ver la primera nota que pasa la definitiva >= 11
-
-      let notaFinalNecesaria = null;
-      const fila = notaPreviaAIndice(notaPrevia);
-
-      for(let nf = 10; nf <= 20; nf++) {
-        let col = notaAIndice(nf);
-        let notaDefinitiva = tabla[fila][col];
-        if(notaDefinitiva >= 11) {
-          notaFinalNecesaria = nf;
-          break;
-        }
+      // mensaje si ya aprobó sin presentar final (nota previa >= 16)
+      if(notaPrevia >= 16) {
+        resultado.innerHTML =
+          `Tu nota previa (promedio redondeado) es <strong>${notaPrevia}</strong>.<br/>` +
+          `¡Ya pasaste la materia sin necesidad de presentar el examen final! 🎉`;
+        return;
       }
 
-      if(notaFinalNecesaria === null) {
-        resultado.textContent = 'No es posible aprobar con las notas de parciales ingresadas.';
+      // obtener índice para tabla
+      const fila = notaPrevia - 10;
+      const col = notaAIndice(final);
+      const notaDefinitiva = tabla[fila][col];
+
+      // resultado
+      let texto = `Nota previa (promedio redondeado): ${notaPrevia}\n` +
+                  `Nota examen final: ${final}\n` +
+                  `Nota definitiva: ${notaDefinitiva}\n`;
+
+      if(notaDefinitiva >= 10) {
+        texto += '¡Felicidades! Has aprobado la materia.';
       } else {
-        // Mostrar la info con dos decimales para nota previa
-        resultado.innerHTML = `
-          Nota Previa (promedio parciales): <strong>${notaPrevia.toFixed(2)}</strong><br/>
-          Necesitas al menos un <strong>${notaFinalNecesaria}</strong> en el examen final para aprobar.
-        `;
+        texto += 'Lo siento, no aprobaste la materia.';
       }
+      resultado.textContent = texto;
     });
   </script>
 </body>
